@@ -1,5 +1,7 @@
 import math
 
+#LET OP: delen door 0 is flauwekul. 
+
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
 # output will not contain spaces
@@ -54,11 +56,27 @@ class Expression():
     
     # operator overloading:
     # this allows us to perform 'arithmetic' with expressions, and obtain another expression
+    # koppel de "+ functie" aan optelling 
     def __add__(self, other):
         return AddNode(self, other)
-        
+    
+    # koppel de "- functie" aan aftrekking   
     def __sub__(self,other): 
         return SubNode(self, other)
+        
+    # koppel de "* functie" aan vermenigvuldiging   
+    def __mul__(self,other): 
+        return MulNode(self, other)
+
+    # koppel de "/ functie" aan deeling   
+    def __truediv__(self,other): 
+        return DivNode(self, other)
+
+    # koppel de "** functie" aan deeling   
+    def __pow__(self,other): 
+        return PowNode(self, other)
+        
+    # koppel de "** functie" aan machtsverheffing
         
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
@@ -74,7 +92,10 @@ class Expression():
         output = []
         
         # list of operators
-        oplist = ['+', '-']
+        oplist1 = ['**']
+        oplist2 = ['*', '/']
+        oplist3 = ['+', '-']
+        oplist = oplist1 + oplist2 + oplist3
         
         for token in tokens:
             if isnumber(token):
@@ -83,7 +104,7 @@ class Expression():
                     output.append(Constant(int(token)))
                 else:
                     output.append(Constant(float(token)))
-            elif token in oplist:
+            elif token in oplist3:
                 # pop operators from the stack to the output until the top is no longer an operator
                 while True:
                     # TODO: when there are more operators, the rules are more complicated
@@ -92,6 +113,18 @@ class Expression():
                         break
                     output.append(stack.pop())
                 # push the new operator onto the stack
+                stack.append(token)
+            elif token in oplist2:
+                while True:
+                    if len(stack) == 0 or stack[-1] not in oplist1+oplist2:
+                        break
+                    output.append(stack.pop())
+                stack.append(token)
+            elif token in oplist1:
+                while True:
+                    if len(stack) == 0 or stack[-1] not in oplist1:
+                        break
+                    output.append(stack.pop())
                 stack.append(token)
             elif token == '(':
                 # left parantheses go to the stack
@@ -123,7 +156,9 @@ class Expression():
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
-    
+        
+#    def evaluate(self):
+        
 class Constant(Expression):
     """Represents a constant value"""
     def __init__(self, value):
@@ -168,15 +203,34 @@ class BinaryNode(Expression):
         # TODO: do we always need parantheses?
         return "(%s %s %s)" % (lstring, self.op_symbol, rstring)
         
+# de klasse die de optelfunctie voor expression creeert        
 class AddNode(BinaryNode):
     """Represents the addition operator"""
     def __init__(self, lhs, rhs):
         super(AddNode, self).__init__(lhs, rhs, '+')
-        
+
+# de klasse die de aftrekfunctie voor expression creeert 
 class SubNode(BinaryNode): 
     """Represents the substraction operator"""
     def __init__(self, lhs, rhs): 
         super(SubNode, self).__init__(lhs, rhs, '-')
         
+# de klasse die de vermenigvuldigingsfunctie voor expression creeert 
+class MulNode(BinaryNode): 
+    """Represents the multiplication operator"""
+    def __init__(self, lhs, rhs): 
+        super(MulNode, self).__init__(lhs, rhs, '*')
+        
+# de klasse die de deelfunctie voor expression creeert 
+class DivNode(BinaryNode): 
+    """Represents the division operator"""
+    def __init__(self, lhs, rhs): 
+        super(DivNode, self).__init__(lhs, rhs, '/')
+        
+# de klasse die de machtsfunctie voor expression creeert 
+class PowNode(BinaryNode): 
+    """Represents the power operator"""
+    def __init__(self, lhs, rhs): 
+        super(PowNode, self).__init__(lhs, rhs, '**')
         
 # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
