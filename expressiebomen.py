@@ -72,11 +72,11 @@ class Expression():
     def __truediv__(self,other): 
         return DivNode(self, other)
 
-    # koppel de "** functie" aan deeling   
+    # koppel de "** functie" aan machtsverheffing  
     def __pow__(self,other): 
         return PowNode(self, other)
         
-    # koppel de "** functie" aan machtsverheffing
+
         
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
