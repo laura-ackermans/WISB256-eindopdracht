@@ -156,7 +156,7 @@ class Expression():
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
-        
+       
 #    def evaluate(self):
         
 class Constant(Expression):
@@ -201,7 +201,54 @@ class BinaryNode(Expression):
         rstring = str(self.rhs)
         
         # TODO: do we always need parantheses?
-        return "(%s %s %s)" % (lstring, self.op_symbol, rstring)
+
+        operation_map = {
+            '+' : (1, False),
+            '-' : (1, True),
+            '*' : (2, False),
+            '/' : (2, True),
+            '**': (3, True)}
+        rank, lassoc = operation_map[self.op_symbol]
+        if type(self.lhs) == Constant and type(self.rhs) == Constant: 
+            return "%s %s %s" % (lstring, self.op_symbol, rstring)      # 3+5
+        
+        elif type(self.lhs) == BinaryNode and type(self.rhs) == Constant:
+            rank2, lassoc2 = operation_map[lhs.op_symbol]
+            if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ): 
+                return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
+            else: 
+                return "%s %s %s" % (lstring, self.op_symbol, rstring)
+        
+        elif type(self.lhs) == Constant and type(self.rhs) == BinaryNode:
+            rank3, lassoc3 = operation_map[rhs.op_symbol]
+            if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+                return "%s %s %s" % (lstring, self.op_symbol, rstring)
+            elif rank3 == rank and lassoc == True: 
+                return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+            else: 
+                return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+        
+        elif type(self.lhs) == BinaryNode and type(self.rhs) == BinaryNode:
+            rank2, lassoc2 = operation_map[lhs.op_symbol]
+            rank3, lassoc3 = operation_map[rhs.op_symbol]
+            if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ):
+                if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+                    return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
+                elif rank3 == rank and lassoc == True: 
+                    return "(%s) %s (%s)" % (lstring, self.op_symbol, rstring)
+                else: 
+                    return "(%s) %s (%s)" % (lstring, self.op_symbol, rstring)
+            else: 
+                if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+                    return "%s %s %s" % (lstring, self.op_symbol, rstring)
+                elif rank3 == rank and lassoc == True: 
+                    return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+                else: 
+                    return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+        else: 
+            return "ERROR"
+
+
         
 # de klasse die de optelfunctie voor expression creeert        
 class AddNode(BinaryNode):
