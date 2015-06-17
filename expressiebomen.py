@@ -157,7 +157,8 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
        
-#    def evaluate(self):
+    def evaluate(self): 
+        return eval(str(self))
         
 class Constant(Expression):
     """Represents a constant value"""
@@ -197,11 +198,6 @@ class BinaryNode(Expression):
             return False
             
     def __str__(self):
-        lstring = str(self.lhs)
-        rstring = str(self.rhs)
-        
-        # TODO: do we always need parantheses?
-
         operation_map = {
             '+' : (1, False),
             '-' : (1, True),
@@ -209,28 +205,37 @@ class BinaryNode(Expression):
             '/' : (2, True),
             '**': (3, True)}
         rank, lassoc = operation_map[self.op_symbol]
-        if type(self.lhs) == Constant and type(self.rhs) == Constant: 
-            return "%s %s %s" % (lstring, self.op_symbol, rstring)      # 3+5
+        nodes = [AddNode, SubNode, DivNode, MulNode, PowNode]
+        if type(self.lhs) == Constant and type(self.rhs) == Constant:
+            lstring = str(self.lhs)
+            rstring = str(self.rhs)
+            return "%s %s %s" % (lstring, self.op_symbol, rstring) 
         
-        elif type(self.lhs) == BinaryNode and type(self.rhs) == Constant:
-            rank2, lassoc2 = operation_map[lhs.op_symbol]
+        elif type(self.lhs) in nodes and type(self.rhs) == Constant:
+            rank2, lassoc2 = operation_map[self.lhs.op_symbol]
+            lstring = str(self.lhs)
+            rstring = str(self.rhs)
             if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ): 
                 return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
             else: 
                 return "%s %s %s" % (lstring, self.op_symbol, rstring)
         
-        elif type(self.lhs) == Constant and type(self.rhs) == BinaryNode:
-            rank3, lassoc3 = operation_map[rhs.op_symbol]
+        elif type(self.lhs) == Constant and type(self.rhs) in nodes:
+            rank3, lassoc3 = operation_map[self.rhs.op_symbol]
+            lstring = str(self.lhs)
+            rstring = str(self.rhs)
             if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
                 return "%s %s %s" % (lstring, self.op_symbol, rstring)
-            elif rank3 == rank and lassoc == True: 
+            elif rank3 == rank and lassoc3 == True: 
                 return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
             else: 
-                return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+                return "%s %s %s" % (lstring, self.op_symbol, rstring)
         
-        elif type(self.lhs) == BinaryNode and type(self.rhs) == BinaryNode:
-            rank2, lassoc2 = operation_map[lhs.op_symbol]
-            rank3, lassoc3 = operation_map[rhs.op_symbol]
+        elif type(self.lhs) in nodes and type(self.rhs) in nodes:
+            rank2, lassoc2 = operation_map[self.lhs.op_symbol]
+            rank3, lassoc3 = operation_map[self.rhs.op_symbol]
+            lstring = str(self.lhs)
+            rstring = str(self.rhs)
             if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ):
                 if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
                     return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
@@ -241,13 +246,12 @@ class BinaryNode(Expression):
             else: 
                 if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
                     return "%s %s %s" % (lstring, self.op_symbol, rstring)
-                elif rank3 == rank and lassoc == True: 
+                elif rank3 == rank and lassoc3 == True: 
                     return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
                 else: 
-                    return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
+                    return "%s %s %s" % (lstring, self.op_symbol, rstring)
         else: 
             return "ERROR"
-
 
         
 # de klasse die de optelfunctie voor expression creeert        
