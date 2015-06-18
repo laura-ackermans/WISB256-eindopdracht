@@ -143,7 +143,7 @@ class Expression():
         # pop any tokens still on the stack to the output
         while len(stack) > 0:
             output.append(stack.pop())
-        
+
         # convert RPN to an actual expression tree
         for t in output:
             if t in oplist:
@@ -155,8 +155,9 @@ class Expression():
                 # a constant, push it to the stack
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
+        print(stack[0])
         return stack[0]
-       
+
     def evaluate(self): 
         return eval(str(self))
         
@@ -215,7 +216,7 @@ class BinaryNode(Expression):
             rank2, lassoc2 = operation_map[self.lhs.op_symbol]
             lstring = str(self.lhs)
             rstring = str(self.rhs)
-            if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ): 
+            if rank2 < rank: #or ( rank2 == rank and self.op_symbol == '**' ): 
                 return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
             else: 
                 return "%s %s %s" % (lstring, self.op_symbol, rstring)
@@ -224,32 +225,28 @@ class BinaryNode(Expression):
             rank3, lassoc3 = operation_map[self.rhs.op_symbol]
             lstring = str(self.lhs)
             rstring = str(self.rhs)
-            if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+            if rank3 > rank or ( rank3 == rank and not lassoc ): 
                 return "%s %s %s" % (lstring, self.op_symbol, rstring)
             elif rank3 == rank and lassoc3 == True: 
                 return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
             else: 
-                return "%s %s %s" % (lstring, self.op_symbol, rstring)
+                return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
         
         elif type(self.lhs) in nodes and type(self.rhs) in nodes:
             rank2, lassoc2 = operation_map[self.lhs.op_symbol]
             rank3, lassoc3 = operation_map[self.rhs.op_symbol]
             lstring = str(self.lhs)
             rstring = str(self.rhs)
-            if rank2 < rank or ( rank2 == rank and self.op_symbol == '**' ):
-                if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+            if rank2 < rank: # or ( rank2 == rank and self.op_symbol == '**' ):
+                if rank3 > rank or ( rank3 == rank and not lassoc ): 
                     return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
-                elif rank3 == rank and lassoc == True: 
-                    return "(%s) %s (%s)" % (lstring, self.op_symbol, rstring)
                 else: 
                     return "(%s) %s (%s)" % (lstring, self.op_symbol, rstring)
             else: 
-                if rank3 > rank or ( rank3 == rank and self.op_symbol == '**'): 
+                if rank3 > rank or ( rank3 == rank and not lassoc ): 
                     return "%s %s %s" % (lstring, self.op_symbol, rstring)
-                elif rank3 == rank and lassoc3 == True: 
-                    return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
                 else: 
-                    return "%s %s %s" % (lstring, self.op_symbol, rstring)
+                    return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
         else: 
             return "ERROR"
 
