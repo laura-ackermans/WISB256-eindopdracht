@@ -76,10 +76,6 @@ class Expression():
     def __pow__(self,other): 
         return PowNode(self, other)
         
-
-        
-    # TODO: other overloads, such as __sub__, __mul__, etc.
-    
     # basic Shunting-yard algorithm
     def fromString(string):
         # split into tokens
@@ -96,6 +92,7 @@ class Expression():
         oplist2 = ['*', '/']
         oplist3 = ['+', '-']
         oplist = oplist1 + oplist2 + oplist3
+        brackets = ['(', ')']
         
         for token in tokens:
             if isnumber(token):
@@ -104,6 +101,8 @@ class Expression():
                     output.append(Constant(int(token)))
                 else:
                     output.append(Constant(float(token)))
+            elif token not in oplist + brackets: 
+                output.append(Variable(token))
             elif token in oplist3:
                 # pop operators from the stack to the output until the top is no longer an operator
                 while True:
@@ -155,12 +154,17 @@ class Expression():
                 # a constant, push it to the stack
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
-        print(stack[0])
         return stack[0]
-
-    def evaluate(self): 
-        return eval(str(self))
         
+"""    def evaluate(self,dictionary = {}): 
+        nodes = [AddNode, SubNode, MulNode, Divnode, PowNode]
+        if type(self) in nodes: 
+            return evaluate(self, dictionary)
+        elif type(self) == Variable: 
+            return evaluate(self, dictionary)
+        else: 
+            return evaluate(self, dictionary)"""
+
 class Constant(Expression):
     """Represents a constant value"""
     def __init__(self, value):
@@ -181,6 +185,27 @@ class Constant(Expression):
         
     def __float__(self):
         return float(self.value)
+        
+    def evaluate(self,dictionary): 
+        return self.value
+        
+class Variable(Expression): 
+    """Represents a variable"""
+    def __init__(self, variable):
+        self.variable = variable
+        
+    def __eq__(self,other): 
+        if isinstance(other, Variable):
+            return self.variable == other.variable
+        else:
+            return False
+        
+    def __str__(self):
+        return str(self.variable)
+    
+    def evaluate(self, dictionary):
+        value = dictionary[self.variable]
+        return value
         
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
@@ -207,12 +232,13 @@ class BinaryNode(Expression):
             '**': (3, True)}
         rank, lassoc = operation_map[self.op_symbol]
         nodes = [AddNode, SubNode, DivNode, MulNode, PowNode]
-        if type(self.lhs) == Constant and type(self.rhs) == Constant:
+        leaves = [Constant, Variable]
+        if type(self.lhs) in leaves and type(self.rhs) in leaves:
             lstring = str(self.lhs)
             rstring = str(self.rhs)
             return "%s %s %s" % (lstring, self.op_symbol, rstring) 
         
-        elif type(self.lhs) in nodes and type(self.rhs) == Constant:
+        elif type(self.lhs) in nodes and type(self.rhs) in leaves:
             rank2, lassoc2 = operation_map[self.lhs.op_symbol]
             lstring = str(self.lhs)
             rstring = str(self.rhs)
@@ -221,7 +247,7 @@ class BinaryNode(Expression):
             else: 
                 return "%s %s %s" % (lstring, self.op_symbol, rstring)
         
-        elif type(self.lhs) == Constant and type(self.rhs) in nodes:
+        elif type(self.lhs) in leaves and type(self.rhs) in nodes:
             rank3, lassoc3 = operation_map[self.rhs.op_symbol]
             lstring = str(self.lhs)
             rstring = str(self.rhs)
@@ -249,7 +275,11 @@ class BinaryNode(Expression):
                     return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
         else: 
             return "ERROR"
-
+            
+    def evaluate(self,dictionary = {}):
+        leftTree = self.lhs.evaluate(dictionary)
+        rightTree = self.rhs.evaluate(dictionary)
+        return eval('%s %s %s' % (leftTree, self.op_symbol, rightTree))
         
 # de klasse die de optelfunctie voor expression creeert        
 class AddNode(BinaryNode):
@@ -281,4 +311,3 @@ class PowNode(BinaryNode):
     def __init__(self, lhs, rhs): 
         super(PowNode, self).__init__(lhs, rhs, '**')
         
-# TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
