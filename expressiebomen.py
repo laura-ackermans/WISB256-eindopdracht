@@ -8,13 +8,17 @@ import math
 def tokenize(string):
     splitchars = list("+-*/(),")
     
-    # surround any splitchar by spaces
+    # surround any splitchar by spaces, take into account what to do when a negative value is entered. 
     tokenstring = []
-    for c in string:
-        if c in splitchars:
-            tokenstring.append(' %s ' % c)
+    for c in range(0,len(string)):
+        if string[c] == '-' and c == 0:
+            tokenstring.append(string[c])
+        elif string[c] == '-' and string[c-1] in splitchars:
+            tokenstring.append(string[c])
+        elif string[c] in splitchars:
+            tokenstring.append(' %s ' % string[c])
         else:
-            tokenstring.append(c)
+            tokenstring.append(string[c])
     tokenstring = ''.join(tokenstring)
     #split on spaces - this gives us our tokens
     tokens = tokenstring.split()
