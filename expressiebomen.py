@@ -12,14 +12,20 @@ def tokenize(string):
     tokenstring = []
     for c in range(0,len(string)):
         if string[c] == '-' and c == 0:
-            tokenstring.append(string[c])
+            tokenstring.append(" ( ")
+            tokenstring.append("-1")
+            tokenstring.append(" * ")
         elif string[c] == '-' and string[c-1] in splitchars:
-            tokenstring.append(string[c])
+            tokenstring.append(" ( -1 * ")
         elif string[c] in splitchars:
             tokenstring.append(' %s ' % string[c])
+        elif string[c-1] == '-' and (c == 1 or string[c-2] in splitchars):
+            tokenstring.append(string[c])
+            tokenstring.append(' ) ')
         else:
             tokenstring.append(string[c])
     tokenstring = ''.join(tokenstring)
+    print(tokenstring)
     #split on spaces - this gives us our tokens
     tokens = tokenstring.split()
     
@@ -50,16 +56,6 @@ def isint(string):
 
 class Expression():
     """A mathematical expression, represented as an expression tree"""
-    
-    """
-    Any concrete subclass of Expression should have these methods:
-     - __str__(): return a string representation of the Expression.
-     - __eq__(other): tree-equality, check if other represents the same expression tree.
-    """
-    # TODO: when adding new methods that should be supported by all subclasses, add them to this list
-    
-    # operator overloading:
-    # this allows us to perform 'arithmetic' with expressions, and obtain another expression
     # koppel de "+ functie" aan optelling 
     def __add__(self, other):
         return AddNode(self, other)
@@ -159,15 +155,6 @@ class Expression():
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
-        
-"""    def evaluate(self,dictionary = {}): 
-        nodes = [AddNode, SubNode, MulNode, Divnode, PowNode]
-        if type(self) in nodes: 
-            return evaluate(self, dictionary)
-        elif type(self) == Variable: 
-            return evaluate(self, dictionary)
-        else: 
-            return evaluate(self, dictionary)"""
 
 class Constant(Expression):
     """Represents a constant value"""
@@ -314,4 +301,3 @@ class PowNode(BinaryNode):
     """Represents the power operator"""
     def __init__(self, lhs, rhs): 
         super(PowNode, self).__init__(lhs, rhs, '**')
-        
