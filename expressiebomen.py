@@ -1,7 +1,5 @@
 import math
 
-#LET OP: delen door 0 is flauwekul. 
-
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
 # output will not contain spaces
